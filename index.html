@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parking Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 350px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #5a67d8;
+        }
+
+        input {
+            padding: 10px;
+            width: 80%;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 15px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        #result {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>My Parking Assistant</h2>
+
+    <button onclick="saveLocation()">Save Parking Location</button>
+
+    <br>
+
+    <input type="text" id="query" placeholder="Ask something...">
+
+    <br>
+
+    <button onclick="findCar()">Find My Car</button>
+
+    <p id="result"></p>
+</div>
+
+<script>
+function saveLocation() {
+    navigator.geolocation.getCurrentPosition(function(position) {
+        fetch('/save', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("result").innerText = data.message;
+        });
+    });
+}
+
+function findCar() {
+    let query = document.getElementById("query").value.toLowerCase();
+
+    if (query.includes("park")) {
+        fetch('/get')
+        .then(res => res.json())
+        .then(data => {
+            if (data.map) {
+                document.getElementById("result").innerHTML =
+                `<a href="${data.map}" target="_blank">📍 Open Location</a>`;
+            } else {
+                document.getElementById("result").innerText = data.error;
+            }
+        });
+    } else {
+        document.getElementById("result").innerText = "Try asking about parking!";
+    }
+}
+</script>
+
+</body>
+</html>
